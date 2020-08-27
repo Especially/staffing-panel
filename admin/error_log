@@ -1,0 +1,7 @@
+[22-Mar-2015 22:12:42 America/New_York] PHP Warning:  Missing argument 2 for base64_to_jpeg(), called in /home/staffing/public_html/admin/base64_test.php on line 17 and defined in /home/staffing/public_html/admin/base64_test.php on line 5
+[22-Mar-2015 22:12:42 America/New_York] PHP Notice:  Undefined variable: output_file in /home/staffing/public_html/admin/base64_test.php on line 6
+[22-Mar-2015 22:12:42 America/New_York] PHP Notice:  Undefined variable: output_dir in /home/staffing/public_html/admin/base64_test.php on line 6
+[22-Mar-2015 22:12:42 America/New_York] PHP Warning:  fopen(): Filename cannot be empty in /home/staffing/public_html/admin/base64_test.php on line 6
+[22-Mar-2015 22:12:42 America/New_York] PHP Warning:  fwrite() expects parameter 1 to be resource, boolean given in /home/staffing/public_html/admin/base64_test.php on line 10
+[22-Mar-2015 22:12:42 America/New_York] PHP Warning:  fclose() expects parameter 1 to be resource, boolean given in /home/staffing/public_html/admin/base64_test.php on line 11
+[22-Mar-2015 22:12:42 America/New_York] PHP Notice:  Undefined variable: output_file in /home/staffing/public_html/admin/base64_test.php on line 13

@@ -1,0 +1,171 @@
+<?php
+ini_set("log_errors", 1);
+/************************************************
+	The Search PHP File
+************************************************/
+
+
+/************************************************
+	MySQL Connect
+************************************************/
+
+// Credentials
+$dbhost = "localhost";
+$dbname = "staffing_panel";
+$dbuser = "staffing_admin";
+$dbpass = "KrYpTeD89";
+
+//	Connection
+global $tutorial_db;
+
+$tutorial_db = new mysqli();
+$tutorial_db->connect($dbhost, $dbuser, $dbpass, $dbname);
+$tutorial_db->set_charset("utf8");
+
+//	Check Connection
+if ($tutorial_db->connect_errno) {
+    printf("Connect failed: %s\n", $tutorial_db->connect_error);
+    exit();
+}
+
+/************************************************
+	Search Functionality
+************************************************/
+
+// Define Output HTML Formating
+$html = '';
+$html .= '<li class="result">';
+$html .= '<a target="_blank" class="clicktype" onclick="clickString">';
+$html .= '<h3>nameString</h3>';
+$html .= '<h4><div class="findr-info"><div class="findr-address">streetString</div><div class="findr-middle">|</div><div class="findr-numbers">phoneString</div></div></h4>';
+$html .= '</a>';
+$html .= '</li>';
+
+// Get Search
+$search_string = preg_replace("/[^A-Za-z0-9]/", " ", $_POST['query']);
+$search_string = $tutorial_db->real_escape_string($search_string);
+
+// Check Length More Than One Character
+if (strlen($search_string) >= 1 && $search_string !== ' ' && $search_string !== '%') {
+	// Build Query
+//SOUNDEX 	$query = 'SELECT "location" as table_name,code,name,street,null,city,postal,is_type,type,type_number,phone,alternate FROM location WHERE SOUNDEX(name) LIKE SOUNDEX("%'.$search_string.'%") UNION ALL SELECT "employee" as table_name,euid,fname,street,sname,city,postal,is_type,type,type_number,phone,alternate FROM employee WHERE SOUNDEX(fname) LIKE SOUNDEX("%'.$search_string.'%") OR SOUNDEX(sname) LIKE SOUNDEX("%'.$search_string.'%") ORDER BY name,NULL LIMIT 10';
+	$query = 'SELECT "location" as table_name,code,name,street,null,city,postal,is_type,type,type_number,phone,alternate FROM location WHERE name LIKE "%'.$search_string.'%" UNION ALL SELECT "employee" as table_name,euid,fname,street,sname,city,postal,is_type,type,type_number,phone,alternate FROM employee WHERE fname LIKE "%'.$search_string.'%" OR sname LIKE "%'.$search_string.'%" ORDER BY name,NULL LIMIT 10';
+	// Do Search
+	$result = $tutorial_db->query($query);
+	while($results = $result->fetch_array()) {
+		$result_array[] = $results;
+	}
+
+	// Check If We Have Results
+	if (isset($result_array)) {
+		foreach ($result_array as $result) {
+				$type = $result['is_type'];
+				$table = $result['table_name'];
+				$last = $result['NULL'];
+				$typenum = $result['type_number'];
+				$typename = $result['name'];
+				$nom = ($typename.','.$table);
+				$nom2 = ($typename.','.$table);
+				$street = $result['street'];
+				if(strpos("x".$nom,',location') !==false){
+					if($type=='false'){
+						$nom = strtok($nom, ',');
+					}
+					if($type=='true'){
+						$nom = strtok($nom, ',');
+						$nom = ($typename.' ('.$result['type'].' #'.$result['type_number'].')');
+					}
+				}
+				if(strpos("x".$nom,',employee') !==false){
+					if($type=='false'){
+						$nom = strtok($nom, ',');
+						$nom = ($typename.', '.$result['NULL']);
+						$steez = "$street<br>$city, ON<br>$postal";
+					}
+					if($type=='true'){
+						$nom = strtok($nom, ',');
+						$nom = ($typename.', '.$result['NULL']);
+					}
+				}
+			// Format Output Strings And Hightlight Matches
+			$street = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['street']);
+			$name = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $nom);
+			$fname = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['fname']);
+			$sname = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['sname']);
+			$tnum = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['tnum']);
+			$phone = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['phone']);
+			$alt = preg_replace("/".$search_string."/i", "<b class='highlight'>".$search_string."</b>", $result['alternate']);
+//			$display_url = 'http://php.net/manual-lookup.php?pattern='.urlencode($result['function']).'&lang=en';			
+			$city = $result['city'];
+			$postal = $result['postal'];
+			$postal = strtoupper($postal);
+			if ($name !== ''){
+
+			// Insert Name
+			if ($alt !== ''){
+				$num = ($phone.' | '.$alt);
+			}
+			if ($alt == ''){
+				$num = ($phone);
+			}
+			$steez = "$street<br>$city, ON<br>$postal";
+				if(strpos("x".$nom2,',employee') !==false){
+					$display_url = 'profile(&quot;'.$result['code'].'&quot;)';
+					$class_type = 'pel-t';
+					if($type=='true'){
+						$steez = "$typenum-$steez";
+					}
+				}else{
+					$display_url = 'viewCal(&quot;'.$result['code'].'&quot;)';
+					$class_type = 'pll-t';
+				}
+			$output = str_replace('nameString', $name, $html);
+
+			// Insert Street
+			$output = str_replace('streetString', $steez, $output);
+			
+			// Insert Phone
+			$output = str_replace('phoneString', $num, $output);
+
+			// Insert Click Type
+			$output = str_replace('clicktype', $class_type, $output);
+
+			// Insert URL
+			$output = str_replace('clickString', $display_url, $output);
+
+			// Output
+			echo($output);
+			}
+		}
+	}else{
+
+		// Format No Results Output
+		$output = str_replace('urlString', 'javascript:void(0);', $html);
+		$output = str_replace('nameString', '<b>No Results Found.</b>', $output);
+		$output = str_replace('<div class="findr-info"><div class="findr-address">streetString</div><div class="findr-middle">|</div><div class="findr-numbers">phoneString</div></div>', 'Perhaps try a different spelling?', $output);
+
+		// Output
+		echo($output);
+	}
+}
+
+
+/*
+// Build Function List (Insert All Functions Into DB - From PHP)
+
+// Compile Functions Array
+$functions = get_defined_functions();
+$functions = $functions['internal'];
+
+// Loop, Format and Insert
+foreach ($functions as $function) {
+	$function_name = str_replace("_", " ", $function);
+	$function_name = ucwords($function_name);
+
+	$query = '';
+	$query = 'INSERT INTO search SET id = "", function = "'.$function.'", name = "'.$function_name.'"';
+
+	$tutorial_db->query($query);
+}
+*/
+?>

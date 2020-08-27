@@ -1,0 +1,12 @@
+RewriteEngine On
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+Redirect /index.html /main
+Redirect /Home /main#/Home
+Redirect /Staff /main#/Staff
+Redirect /New /main#/New
+Redirect /Locations /main#/Locations
+Redirect /Account /main#/Account
+Redirect /Payroll /main#/Payroll
+Redirect /KB /main#/KB
+Header set Cache-Control "max-age=0, private, no-cache, no-store, must-revalidate"

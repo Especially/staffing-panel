@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+Redirect /admin/index.html /admin/main
+Header set Cache-Control "max-age=0, private, no-cache, no-store, must-revalidate"
